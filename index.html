@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MediMind</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body {
@@ -16,6 +16,10 @@
     min-height: 100vh;
     padding: 2rem 1rem;
   }
+  body.lang-ar .phone-screen, body.lang-ar .phone-screen * {
+    font-family: 'Cairo', 'Inter', sans-serif;
+  }
+  .phone-screen.rtl { direction: rtl; }
 
   .stage {
     display: flex;
@@ -25,7 +29,6 @@
     width: 100%;
   }
 
-  /* Phone frame */
   .phone-frame {
     flex-shrink: 0;
     width: 320px;
@@ -54,24 +57,17 @@
     position: relative;
   }
 
-  /* Screens */
   .screen {
     position: absolute;
     inset: 0;
     display: none;
     flex-direction: column;
-    opacity: 0;
-    transition: opacity 0.25s ease;
   }
-  .screen.active {
-    display: flex;
-    opacity: 1;
-  }
+  .screen.active { display: flex; }
 
-  /* STATUS BAR */
   .status-bar {
-    height: 44px;
-    padding: 12px 20px 0;
+    height: 32px;
+    padding: 10px 20px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -83,11 +79,10 @@
   .status-bar.light { background: #f8faf9; color: #1a1a18; }
   .status-bar.reminder-bar { background: #0F6E56; color: white; }
 
-  /* ─── SCREEN: HOME ─── */
   #screen-home { background: #f8faf9; }
   .home-header {
     background: #085041;
-    padding: 8px 20px 20px;
+    padding: 8px 20px 18px;
     flex-shrink: 0;
   }
   .home-header-top {
@@ -133,6 +128,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
   }
   .today-ring-inner {
     width: 34px; height: 34px;
@@ -146,7 +142,7 @@
     color: #5DCAA5;
   }
 
-  .home-scroll {
+  .scroll-area {
     flex: 1;
     overflow-y: auto;
     padding: 14px 16px;
@@ -169,10 +165,9 @@
     gap: 12px;
     cursor: pointer;
     border: 1.5px solid transparent;
-    transition: all 0.15s;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   }
-  .med-card:active { transform: scale(0.98); }
+  .med-card.upcoming-highlight { border-color: #0F6E56; }
   .med-icon {
     width: 42px; height: 42px;
     border-radius: 12px;
@@ -185,7 +180,8 @@
   .med-icon.green { background: #E1F5EE; }
   .med-icon.gray { background: #f1efea; }
   .med-icon.red { background: #FCEBEB; }
-  .med-info { flex: 1; }
+  .med-icon.blue { background: #E6F1FB; }
+  .med-info { flex: 1; min-width: 0; }
   .med-name { font-size: 14px; font-weight: 600; color: #1a1a18; }
   .med-detail { font-size: 12px; color: #888780; margin-top: 1px; }
   .med-status {
@@ -198,8 +194,9 @@
   .status-taken { background: #E1F5EE; color: #0F6E56; }
   .status-upcoming { background: #f1efea; color: #888780; }
   .status-missed { background: #FCEBEB; color: #A32D2D; }
+  .status-snoozed { background: #FAEEDA; color: #BA7517; }
 
-  .home-tab-bar {
+  .tab-bar {
     background: white;
     border-top: 1px solid #f0ede8;
     padding: 8px 0 16px;
@@ -213,20 +210,142 @@
     align-items: center;
     gap: 3px;
     cursor: pointer;
+    flex: 1;
   }
   .tab-dot {
-    width: 24px; height: 24px;
+    width: 28px; height: 28px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 16px;
   }
-  .tab-dot.active-tab { background: #E1F5EE; }
+  .tab-item.active-tab .tab-dot { background: #E1F5EE; }
   .tab-label { font-size: 10px; color: #888780; }
-  .tab-label.active-tab { color: #0F6E56; font-weight: 600; }
+  .tab-item.active-tab .tab-label { color: #0F6E56; font-weight: 600; }
 
-  /* ─── SCREEN: REMINDER ─── */
+  #screen-medicines { background: #f8faf9; }
+  .simple-header {
+    background: #085041;
+    padding: 8px 20px 18px;
+    flex-shrink: 0;
+  }
+  .simple-header h2 { color: white; font-size: 20px; font-weight: 600; }
+  .simple-header p { color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 2px; }
+
+  .med-detail-card {
+    background: white;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .med-detail-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .med-detail-info { flex: 1; }
+  .med-detail-name { font-size: 15px; font-weight: 600; color: #1a1a18; }
+  .med-detail-dose { font-size: 12px; color: #888780; }
+  .med-detail-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background: #f8faf9;
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 8px;
+  }
+  .meta-item label {
+    font-size: 9px;
+    color: #888780;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .meta-item span { font-size: 12px; color: #1a1a18; font-weight: 500; }
+  .med-purpose {
+    font-size: 11px;
+    color: #5F5E5A;
+    background: #E1F5EE;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-top: 8px;
+    line-height: 1.45;
+  }
+  .med-purpose strong { color: #0F6E56; display: block; margin-bottom: 2px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  #screen-settings { background: #f8faf9; }
+  .setting-group {
+    background: white;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  .setting-group h4 {
+    font-size: 10px;
+    color: #888780;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 12px 14px 6px;
+  }
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border-top: 1px solid #f1efea;
+    gap: 12px;
+  }
+  .setting-row:first-of-type { border-top: none; }
+  .setting-label { font-size: 13px; color: #1a1a18; font-weight: 500; }
+  .setting-sub { font-size: 11px; color: #888780; margin-top: 1px; }
+  .setting-value { font-size: 12px; color: #0F6E56; font-weight: 600; }
+
+  .switch {
+    width: 36px;
+    height: 20px;
+    background: #d3d1c7;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .switch.on { background: #0F6E56; }
+  .switch::after {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    background: white;
+    border-radius: 50%;
+    top: 2px; left: 2px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .switch.on::after { transform: translateX(16px); }
+
+  .seg-toggle {
+    display: flex;
+    background: #f1efea;
+    border-radius: 20px;
+    padding: 2px;
+    flex-shrink: 0;
+  }
+  .seg-toggle div {
+    padding: 4px 12px;
+    border-radius: 18px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #888780;
+    cursor: pointer;
+  }
+  .seg-toggle div.on { background: #0F6E56; color: white; }
+
   #screen-reminder { background: #0F6E56; }
   .reminder-body {
     flex: 1;
@@ -234,23 +353,19 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px 24px;
+    padding: 16px 22px;
     text-align: center;
+    overflow-y: auto;
   }
   .reminder-pulse {
-    width: 96px; height: 96px;
+    width: 88px; height: 88px;
     border-radius: 50%;
     background: rgba(255,255,255,0.15);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 44px;
-    margin-bottom: 20px;
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.3); }
-    50% { transform: scale(1.04); box-shadow: 0 0 0 16px rgba(255,255,255,0); }
+    font-size: 40px;
+    margin-bottom: 18px;
   }
   .reminder-time { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
   .reminder-title { font-size: 26px; font-weight: 700; color: white; margin-bottom: 4px; }
@@ -261,7 +376,7 @@
     background: rgba(255,255,255,0.1);
     padding: 6px 14px;
     border-radius: 20px;
-    margin-bottom: 24px;
+    margin-bottom: 22px;
   }
 
   .audio-btn {
@@ -276,10 +391,26 @@
     padding: 8px 18px;
     border-radius: 20px;
     cursor: pointer;
-    margin-bottom: 28px;
+    margin-bottom: 22px;
     font-family: inherit;
   }
   .audio-icon { font-size: 16px; }
+
+  .info-expand {
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 18px;
+    color: rgba(255,255,255,0.85);
+    font-size: 12px;
+    line-height: 1.55;
+    text-align: left;
+    display: none;
+    width: 100%;
+  }
+  .phone-screen.rtl .info-expand { text-align: right; }
+  .info-expand.visible { display: block; }
+  .info-expand strong { color: #9FE1CB; display: block; margin-bottom: 4px; }
 
   .reminder-actions { width: 100%; display: flex; flex-direction: column; gap: 10px; }
   .btn-taken {
@@ -287,14 +418,12 @@
     color: #0F6E56;
     font-size: 16px;
     font-weight: 700;
-    padding: 16px;
+    padding: 14px;
     border-radius: 16px;
     border: none;
     cursor: pointer;
     font-family: inherit;
-    transition: transform 0.1s;
   }
-  .btn-taken:active { transform: scale(0.97); }
   .btn-row { display: flex; gap: 8px; }
   .btn-secondary {
     flex: 1;
@@ -307,64 +436,85 @@
     border: 1px solid rgba(255,255,255,0.2);
     cursor: pointer;
     font-family: inherit;
-    transition: transform 0.1s;
   }
-  .btn-secondary:active { transform: scale(0.97); }
 
-  /* ─── SCREEN: TAKEN CONFIRM ─── */
-  #screen-confirm { background: #f8faf9; align-items: center; justify-content: center; }
-  .confirm-body { text-align: center; padding: 30px; }
+  #screen-confirm { background: #f8faf9; }
+  .confirm-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px;
+  }
   .confirm-check {
-    width: 80px; height: 80px;
+    width: 76px; height: 76px;
     border-radius: 50%;
     background: #E1F5EE;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 36px;
-    margin: 0 auto 16px;
+    font-size: 34px;
+    margin: 0 auto 14px;
+    color: #0F6E56;
+    font-weight: 700;
   }
-  .confirm-title { font-size: 22px; font-weight: 700; color: #0F6E56; margin-bottom: 8px; }
-  .confirm-sub { font-size: 14px; color: #888780; margin-bottom: 24px; }
-  .confirm-next { font-size: 13px; color: #5F5E5A; margin-bottom: 28px; }
+  .confirm-title { font-size: 22px; font-weight: 700; color: #0F6E56; margin-bottom: 6px; }
+  .confirm-sub { font-size: 13px; color: #888780; margin-bottom: 20px; line-height: 1.5; }
+  .confirm-next { font-size: 12px; color: #5F5E5A; margin-bottom: 16px; }
   .confirm-next strong { color: #0F6E56; }
+  .ai-note {
+    font-size: 11px;
+    color: #5F5E5A;
+    background: #f1efea;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 22px;
+    text-align: left;
+    line-height: 1.45;
+  }
+  .phone-screen.rtl .ai-note { text-align: right; }
+  .ai-note strong { color: #0F6E56; display: block; margin-bottom: 3px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
   .btn-home {
     background: #0F6E56;
     color: white;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
-    padding: 14px 32px;
+    padding: 12px 30px;
     border-radius: 14px;
     border: none;
     cursor: pointer;
     font-family: inherit;
   }
 
-  /* ─── SCREEN: REPORT ─── */
   #screen-report { background: #f8faf9; }
-  .report-header {
-    background: #085041;
-    padding: 10px 20px 18px;
+  .report-header { background: #085041; padding: 8px 20px 16px; flex-shrink: 0; }
+  .report-header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .report-header h2 { font-size: 18px; font-weight: 600; color: white; margin-bottom: 2px; }
+  .report-header p { font-size: 11px; color: rgba(255,255,255,0.6); }
+  .report-badge {
+    font-size: 9px;
+    background: rgba(255,255,255,0.15);
+    padding: 4px 9px;
+    border-radius: 20px;
+    color: rgba(255,255,255,0.85);
     flex-shrink: 0;
   }
-  .report-header h2 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 2px; }
-  .report-header p { font-size: 12px; color: rgba(255,255,255,0.6); }
-
-  .report-scroll { flex: 1; overflow-y: auto; padding: 14px 16px; }
 
   .adherence-circle {
     background: white;
-    border-radius: 16px;
-    padding: 18px;
-    margin-bottom: 12px;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 14px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   }
   .donut-wrap {
     position: relative;
-    width: 70px; height: 70px;
+    width: 66px; height: 66px;
     flex-shrink: 0;
   }
   .donut-wrap svg { transform: rotate(-90deg); }
@@ -374,82 +524,90 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: #0F6E56;
   }
-  .adherence-text h3 { font-size: 16px; font-weight: 700; color: #1a1a18; }
-  .adherence-text p { font-size: 12px; color: #888780; margin-top: 2px; }
+  .adherence-text { flex: 1; min-width: 0; }
+  .adherence-text h3 { font-size: 14px; font-weight: 700; color: #1a1a18; }
+  .adherence-text p { font-size: 11px; color: #888780; margin-top: 2px; }
+  .adherence-text .up { margin-top: 4px; color: #0F6E56; font-size: 10px; font-weight: 600; }
 
   .week-grid {
     background: white;
-    border-radius: 16px;
+    border-radius: 14px;
     padding: 14px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   }
-  .week-grid h4 { font-size: 12px; font-weight: 600; color: #888780; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+  .week-grid h4 { font-size: 11px; font-weight: 600; color: #888780; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
   .week-days { display: flex; gap: 6px; }
-  .day-dot {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-  }
+  .day-dot { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
   .day-dot span { font-size: 10px; color: #888780; }
   .dot {
-    width: 30px; height: 30px;
+    width: 28px; height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 13px;
   }
-  .dot.green { background: #E1F5EE; }
-  .dot.red { background: #FCEBEB; }
-  .dot.gray { background: #f1efea; }
+  .dot.green { background: #E1F5EE; color: #0F6E56; }
+  .dot.red { background: #FCEBEB; color: #A32D2D; }
+  .dot.gray { background: #f1efea; color: #888780; }
 
   .med-breakdown {
     background: white;
-    border-radius: 16px;
+    border-radius: 14px;
     padding: 14px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    margin-bottom: 12px;
-  }
-  .med-breakdown h4 { font-size: 12px; font-weight: 600; color: #888780; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
-  .breakdown-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
     margin-bottom: 10px;
   }
-  .breakdown-name { font-size: 13px; font-weight: 500; color: #1a1a18; width: 90px; flex-shrink: 0; }
-  .bar-bg { flex: 1; height: 8px; background: #f1efea; border-radius: 4px; }
-  .bar-fill { height: 8px; border-radius: 4px; background: #0F6E56; }
+  .med-breakdown h4 { font-size: 11px; font-weight: 600; color: #888780; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+  .breakdown-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+  .breakdown-name { font-size: 12px; font-weight: 500; color: #1a1a18; width: 86px; flex-shrink: 0; }
+  .bar-bg { flex: 1; height: 7px; background: #f1efea; border-radius: 4px; }
+  .bar-fill { height: 7px; border-radius: 4px; background: #0F6E56; }
   .bar-pct { font-size: 11px; font-weight: 600; color: #0F6E56; width: 32px; text-align: right; flex-shrink: 0; }
 
   .share-btn {
     width: 100%;
     background: #0F6E56;
     color: white;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
-    padding: 14px;
+    padding: 12px;
     border-radius: 14px;
     border: none;
     cursor: pointer;
     font-family: inherit;
-    margin-bottom: 16px;
-    transition: transform 0.1s;
+    margin-bottom: 10px;
   }
-  .share-btn:active { transform: scale(0.98); }
 
-  /* Right panel info */
-  .side-panel {
-    flex: 1;
-    min-width: 0;
+  .toast {
+    position: absolute;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1a1a18;
+    color: white;
+    font-size: 12px;
+    padding: 10px 16px;
+    border-radius: 24px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+    z-index: 100;
+    white-space: nowrap;
+    max-width: 280px;
   }
+  .toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .side-panel { flex: 1; min-width: 0; }
   .side-title {
     font-size: 11px;
     font-weight: 600;
@@ -473,7 +631,6 @@
     padding: 10px 0;
     border-bottom: 1px solid rgba(255,255,255,0.08);
     cursor: pointer;
-    transition: opacity 0.15s;
   }
   .screen-list li:last-child { border-bottom: none; }
   .screen-list li:hover { opacity: 0.8; }
@@ -485,9 +642,7 @@
     background: rgba(255,255,255,0.25);
     margin-top: 5px;
     flex-shrink: 0;
-    transition: background 0.2s;
   }
-  .nav-content {}
   .nav-title { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.8); margin-bottom: 2px; }
   .nav-desc { font-size: 12px; color: rgba(255,255,255,0.4); }
 
@@ -511,181 +666,216 @@
 
 <div class="stage">
 
-  <!-- PHONE -->
   <div class="phone-frame">
     <div class="phone-notch"></div>
-    <div class="phone-screen">
+    <div class="phone-screen" id="phone-screen">
 
-      <!-- HOME SCREEN -->
+      <!-- HOME -->
       <div class="screen active" id="screen-home">
-        <div class="status-bar dark">
-          <span>9:41</span>
-          <span>▪ ▪ ▪ ◼</span>
-        </div>
+        <div class="status-bar dark"><span>9:41</span><span>▪ ▪ ▪ ◼</span></div>
         <div class="home-header">
           <div class="home-header-top">
             <div>
-              <div class="home-greeting">Good morning,</div>
+              <div class="home-greeting" data-i18n="greeting">Good morning,</div>
               <div class="home-name">Ibrahim</div>
             </div>
-            <div class="lang-toggle" onclick="toggleLang(this)">
+            <div class="lang-toggle" onclick="toggleLang()">
               <div class="lang-btn active" id="lang-en">EN</div>
               <div class="lang-btn" id="lang-ar">AR</div>
             </div>
           </div>
           <div class="today-card">
             <div>
-              <div class="today-label">Today's medications</div>
-              <div class="today-count">4 <span style="font-size:14px;font-weight:400;color:rgba(255,255,255,0.6)">scheduled</span></div>
-              <div class="today-sub">2 taken · 1 upcoming · 1 missed</div>
+              <div class="today-label" data-i18n="todayMeds">Today's medications</div>
+              <div class="today-count">4 <span style="font-size:14px;font-weight:400;color:rgba(255,255,255,0.6)" data-i18n="scheduled">scheduled</span></div>
+              <div class="today-sub" data-i18n="todaySummary">2 taken · 1 upcoming · 1 missed</div>
             </div>
-            <div class="today-ring">
-              <div class="today-ring-inner">67%</div>
-            </div>
+            <div class="today-ring"><div class="today-ring-inner">67%</div></div>
           </div>
         </div>
 
-        <div class="home-scroll">
-          <div class="section-title">Today's Schedule</div>
+        <div class="scroll-area">
+          <div class="section-title" data-i18n="todaysSchedule">Today's Schedule</div>
 
-          <div class="med-card" onclick="showScreen('screen-reminder')">
+          <div class="med-card" onclick="openMedicines()">
             <div class="med-icon green">💊</div>
             <div class="med-info">
               <div class="med-name">Lisinopril</div>
-              <div class="med-detail">10mg · 8:00 AM · With water</div>
+              <div class="med-detail">10mg · 8:00 AM · <span data-i18n="withWater">With water</span></div>
             </div>
-            <div class="med-status status-taken">Taken ✓</div>
+            <div class="med-status status-taken" data-i18n="statusTaken">Taken ✓</div>
           </div>
 
-          <div class="med-card" onclick="showScreen('screen-reminder')">
+          <div class="med-card" onclick="openMedicines()">
             <div class="med-icon green">💊</div>
             <div class="med-info">
               <div class="med-name">Metformin</div>
-              <div class="med-detail">500mg · 8:00 AM · With food</div>
+              <div class="med-detail">500mg · 8:00 AM · <span data-i18n="withFood">With food</span></div>
             </div>
-            <div class="med-status status-taken">Taken ✓</div>
+            <div class="med-status status-taken" data-i18n="statusTaken">Taken ✓</div>
           </div>
 
-          <div class="med-card" onclick="showScreen('screen-reminder')" style="border-color:#0F6E56;">
-            <div class="med-icon gray">💊</div>
+          <div class="med-card upcoming-highlight" onclick="openReminder()">
+            <div class="med-icon blue">💊</div>
             <div class="med-info">
               <div class="med-name">Atorvastatin</div>
-              <div class="med-detail">20mg · 2:00 PM · Coming up</div>
+              <div class="med-detail">20mg · 2:00 PM · <span data-i18n="comingUp">Coming up</span></div>
             </div>
-            <div class="med-status status-upcoming">2:00 PM</div>
+            <div class="med-status status-upcoming" id="atorva-status">2:00 PM</div>
           </div>
 
-          <div class="med-card" onclick="showScreen('screen-reminder')">
+          <div class="med-card" onclick="openMedicines()">
             <div class="med-icon red">💊</div>
             <div class="med-info">
               <div class="med-name">Aspirin</div>
-              <div class="med-detail">81mg · 8:00 AM · Missed</div>
+              <div class="med-detail">81mg · 8:00 AM · <span data-i18n="statusMissed">Missed</span></div>
             </div>
-            <div class="med-status status-missed">Missed</div>
+            <div class="med-status status-missed" data-i18n="statusMissed">Missed</div>
           </div>
 
-          <div class="section-title" style="margin-top:14px">This Week</div>
-          <div style="background:white;border-radius:14px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);cursor:pointer" onclick="showScreen('screen-report')">
+          <div class="section-title" style="margin-top:14px" data-i18n="thisWeek">This Week</div>
+          <div style="background:white;border-radius:14px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);cursor:pointer" onclick="goTo('screen-report')">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <div>
-                <div style="font-size:14px;font-weight:600;color:#1a1a18">Weekly Report</div>
-                <div style="font-size:12px;color:#888780;margin-top:2px">Tap to view adherence summary</div>
+                <div style="font-size:14px;font-weight:600;color:#1a1a18" data-i18n="weeklyReport">Weekly Report</div>
+                <div style="font-size:12px;color:#888780;margin-top:2px" data-i18n="tapToView">Tap to view adherence summary</div>
               </div>
               <div style="font-size:20px;font-weight:700;color:#0F6E56">78%</div>
             </div>
           </div>
         </div>
 
-        <div class="home-tab-bar">
-          <div class="tab-item">
-            <div class="tab-dot active-tab">🏠</div>
-            <div class="tab-label active-tab">Home</div>
+        <div class="tab-bar">
+          <div class="tab-item active-tab" onclick="goTo('screen-home')">
+            <div class="tab-dot">🏠</div><div class="tab-label" data-i18n="home">Home</div>
           </div>
-          <div class="tab-item" onclick="showScreen('screen-report')">
-            <div class="tab-dot">📊</div>
-            <div class="tab-label">Reports</div>
+          <div class="tab-item" onclick="goTo('screen-medicines')">
+            <div class="tab-dot">💊</div><div class="tab-label" data-i18n="medicines">Medicines</div>
           </div>
-          <div class="tab-item">
-            <div class="tab-dot">💊</div>
-            <div class="tab-label">Medicines</div>
+          <div class="tab-item" onclick="goTo('screen-report')">
+            <div class="tab-dot">📊</div><div class="tab-label" data-i18n="reports">Reports</div>
           </div>
-          <div class="tab-item">
-            <div class="tab-dot">⚙️</div>
-            <div class="tab-label">Settings</div>
+          <div class="tab-item" onclick="goTo('screen-settings')">
+            <div class="tab-dot">⚙️</div><div class="tab-label" data-i18n="settings">Settings</div>
           </div>
         </div>
       </div>
 
-      <!-- REMINDER SCREEN -->
-      <div class="screen" id="screen-reminder">
-        <div class="status-bar reminder-bar">
-          <span>9:41</span>
-          <span>▪ ▪ ▪ ◼</span>
+      <!-- MEDICINES -->
+      <div class="screen" id="screen-medicines">
+        <div class="status-bar dark"><span>9:41</span><span>▪ ▪ ▪ ◼</span></div>
+        <div class="simple-header">
+          <h2 data-i18n="medicines">Medicines</h2>
+          <p data-i18n="medicinesSub">4 active prescriptions</p>
         </div>
-        <div class="reminder-body">
-          <div class="reminder-pulse">💊</div>
-          <div class="reminder-time">Time for your 2:00 PM medication</div>
-          <div class="reminder-title">Atorvastatin</div>
-          <div class="reminder-dose">1 tablet · 20mg</div>
-          <div class="reminder-why">For your cholesterol</div>
 
-          <button class="audio-btn" onclick="playAudio(this)">
-            <span class="audio-icon">🔊</span>
-            <span id="audio-text">Play in Arabic</span>
-          </button>
+        <div class="scroll-area">
+          <div class="med-detail-card">
+            <div class="med-detail-top">
+              <div class="med-icon green">💊</div>
+              <div class="med-detail-info">
+                <div class="med-detail-name">Lisinopril</div>
+                <div class="med-detail-dose">10mg · <span data-i18n="oncePerDay">Once per day</span></div>
+              </div>
+            </div>
+            <div class="med-detail-meta">
+              <div class="meta-item"><label data-i18n="metaTime">Time</label><span>8:00 AM</span></div>
+              <div class="meta-item"><label data-i18n="metaWith">Take with</label><span data-i18n="withWater">With water</span></div>
+            </div>
+            <div class="med-purpose">
+              <strong data-i18n="purposeLabel">What it's for</strong>
+              <span data-i18n="lisinoprilPurpose">Blood pressure control. Helps relax blood vessels.</span>
+            </div>
+          </div>
 
-          <div class="reminder-actions">
-            <button class="btn-taken" onclick="showScreen('screen-confirm')">✓ I took it</button>
-            <div class="btn-row">
-              <button class="btn-secondary" onclick="showScreen('screen-home')">⏰ Snooze 30 min</button>
-              <button class="btn-secondary">❓ What is this?</button>
+          <div class="med-detail-card">
+            <div class="med-detail-top">
+              <div class="med-icon green">💊</div>
+              <div class="med-detail-info">
+                <div class="med-detail-name">Metformin</div>
+                <div class="med-detail-dose">500mg · <span data-i18n="twicePerDay">Twice per day</span></div>
+              </div>
+            </div>
+            <div class="med-detail-meta">
+              <div class="meta-item"><label data-i18n="metaTime">Time</label><span>8:00 AM, 8:00 PM</span></div>
+              <div class="meta-item"><label data-i18n="metaWith">Take with</label><span data-i18n="withFood">With food</span></div>
+            </div>
+            <div class="med-purpose">
+              <strong data-i18n="purposeLabel">What it's for</strong>
+              <span data-i18n="metforminPurpose">Manages blood sugar in type 2 diabetes.</span>
+            </div>
+          </div>
+
+          <div class="med-detail-card">
+            <div class="med-detail-top">
+              <div class="med-icon blue">💊</div>
+              <div class="med-detail-info">
+                <div class="med-detail-name">Atorvastatin</div>
+                <div class="med-detail-dose">20mg · <span data-i18n="oncePerDay">Once per day</span></div>
+              </div>
+            </div>
+            <div class="med-detail-meta">
+              <div class="meta-item"><label data-i18n="metaTime">Time</label><span>2:00 PM</span></div>
+              <div class="meta-item"><label data-i18n="metaWith">Take with</label><span data-i18n="anyTime">Any time</span></div>
+            </div>
+            <div class="med-purpose">
+              <strong data-i18n="purposeLabel">What it's for</strong>
+              <span data-i18n="atorvaPurpose">Lowers cholesterol. Reduces risk of heart disease.</span>
+            </div>
+          </div>
+
+          <div class="med-detail-card">
+            <div class="med-detail-top">
+              <div class="med-icon red">💊</div>
+              <div class="med-detail-info">
+                <div class="med-detail-name">Aspirin</div>
+                <div class="med-detail-dose">81mg · <span data-i18n="oncePerDay">Once per day</span></div>
+              </div>
+            </div>
+            <div class="med-detail-meta">
+              <div class="meta-item"><label data-i18n="metaTime">Time</label><span>8:00 AM</span></div>
+              <div class="meta-item"><label data-i18n="metaWith">Take with</label><span data-i18n="withFood">With food</span></div>
+            </div>
+            <div class="med-purpose">
+              <strong data-i18n="purposeLabel">What it's for</strong>
+              <span data-i18n="aspirinPurpose">Low-dose. Prevents blood clots and protects the heart.</span>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- CONFIRM SCREEN -->
-      <div class="screen" id="screen-confirm">
-        <div class="status-bar light">
-          <span>9:41</span>
-          <span>▪ ▪ ▪ ◼</span>
-        </div>
-        <div class="confirm-body">
-          <div class="confirm-check">✓</div>
-          <div class="confirm-title">Logged!</div>
-          <div class="confirm-sub">Atorvastatin marked as taken<br>at 2:03 PM today</div>
-          <div class="confirm-next">
-            Next medication:<br>
-            <strong>Metoprolol — 8:00 PM tonight</strong>
+        <div class="tab-bar">
+          <div class="tab-item" onclick="goTo('screen-home')">
+            <div class="tab-dot">🏠</div><div class="tab-label" data-i18n="home">Home</div>
           </div>
-          <div style="font-size:12px;color:#888780;background:#f1efea;border-radius:10px;padding:10px 14px;margin-bottom:24px;text-align:left">
-            <strong style="color:#0F6E56;display:block;margin-bottom:4px">AI update</strong>
-            You usually take this at 2:05–2:10 PM. Tomorrow's reminder has been adjusted to 2:05 PM.
+          <div class="tab-item active-tab" onclick="goTo('screen-medicines')">
+            <div class="tab-dot">💊</div><div class="tab-label" data-i18n="medicines">Medicines</div>
           </div>
-          <button class="btn-home" onclick="showScreen('screen-home')">Back to home</button>
+          <div class="tab-item" onclick="goTo('screen-report')">
+            <div class="tab-dot">📊</div><div class="tab-label" data-i18n="reports">Reports</div>
+          </div>
+          <div class="tab-item" onclick="goTo('screen-settings')">
+            <div class="tab-dot">⚙️</div><div class="tab-label" data-i18n="settings">Settings</div>
+          </div>
         </div>
       </div>
 
-      <!-- REPORT SCREEN -->
+      <!-- REPORTS -->
       <div class="screen" id="screen-report">
-        <div class="status-bar dark">
-          <span>9:41</span>
-          <span>▪ ▪ ▪ ◼</span>
-        </div>
+        <div class="status-bar dark"><span>9:41</span><span>▪ ▪ ▪ ◼</span></div>
         <div class="report-header">
-          <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="report-header-row">
             <div>
-              <h2>Weekly Report</h2>
+              <h2 data-i18n="weeklyReport">Weekly Report</h2>
               <p>10 – 16 May 2026</p>
             </div>
-            <div style="font-size:10px;background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:20px;color:rgba(255,255,255,0.8)">Auto-sent to Dr. Hassan</div>
+            <div class="report-badge" data-i18n="autoSent">Auto-sent to Dr. Hassan</div>
           </div>
         </div>
 
-        <div class="report-scroll">
+        <div class="scroll-area">
           <div class="adherence-circle">
             <div class="donut-wrap">
-              <svg width="70" height="70" viewBox="0 0 70 70">
+              <svg width="66" height="66" viewBox="0 0 70 70">
                 <circle cx="35" cy="35" r="28" fill="none" stroke="#f1efea" stroke-width="8"/>
                 <circle cx="35" cy="35" r="28" fill="none" stroke="#0F6E56" stroke-width="8"
                   stroke-dasharray="175.9" stroke-dashoffset="38.7" stroke-linecap="round"/>
@@ -693,27 +883,27 @@
               <div class="donut-center">78%</div>
             </div>
             <div class="adherence-text">
-              <h3>Good this week</h3>
-              <p>22 of 28 doses taken on time</p>
-              <p style="margin-top:4px;color:#0F6E56;font-size:11px;font-weight:600">↑ Up from 71% last week</p>
+              <h3 data-i18n="goodThisWeek">Good this week</h3>
+              <p data-i18n="dosesTaken">22 of 28 doses taken on time</p>
+              <p class="up" data-i18n="upFromLast">↑ Up from 71% last week</p>
             </div>
           </div>
 
           <div class="week-grid">
-            <h4>Day by day</h4>
+            <h4 data-i18n="dayByDay">Day by day</h4>
             <div class="week-days">
-              <div class="day-dot"><span>Mon</span><div class="dot green">✓</div></div>
-              <div class="day-dot"><span>Tue</span><div class="dot green">✓</div></div>
-              <div class="day-dot"><span>Wed</span><div class="dot red">✗</div></div>
-              <div class="day-dot"><span>Thu</span><div class="dot green">✓</div></div>
-              <div class="day-dot"><span>Fri</span><div class="dot green">✓</div></div>
-              <div class="day-dot"><span>Sat</span><div class="dot green">✓</div></div>
-              <div class="day-dot"><span>Sun</span><div class="dot gray">–</div></div>
+              <div class="day-dot"><span data-i18n="mon">Mon</span><div class="dot green">✓</div></div>
+              <div class="day-dot"><span data-i18n="tue">Tue</span><div class="dot green">✓</div></div>
+              <div class="day-dot"><span data-i18n="wed">Wed</span><div class="dot red">✗</div></div>
+              <div class="day-dot"><span data-i18n="thu">Thu</span><div class="dot green">✓</div></div>
+              <div class="day-dot"><span data-i18n="fri">Fri</span><div class="dot green">✓</div></div>
+              <div class="day-dot"><span data-i18n="sat">Sat</span><div class="dot green">✓</div></div>
+              <div class="day-dot"><span data-i18n="sun">Sun</span><div class="dot gray">–</div></div>
             </div>
           </div>
 
           <div class="med-breakdown">
-            <h4>By medication</h4>
+            <h4 data-i18n="byMedication">By medication</h4>
             <div class="breakdown-row">
               <div class="breakdown-name">Lisinopril</div>
               <div class="bar-bg"><div class="bar-fill" style="width:100%"></div></div>
@@ -736,12 +926,181 @@
             </div>
           </div>
 
-          <button class="share-btn" onclick="shareReport()">📤 Share report with Dr. Hassan</button>
+          <button class="share-btn" onclick="shareReport(this)" data-i18n="shareBtn">📤 Share with Dr. Hassan</button>
+        </div>
+
+        <div class="tab-bar">
+          <div class="tab-item" onclick="goTo('screen-home')">
+            <div class="tab-dot">🏠</div><div class="tab-label" data-i18n="home">Home</div>
+          </div>
+          <div class="tab-item" onclick="goTo('screen-medicines')">
+            <div class="tab-dot">💊</div><div class="tab-label" data-i18n="medicines">Medicines</div>
+          </div>
+          <div class="tab-item active-tab" onclick="goTo('screen-report')">
+            <div class="tab-dot">📊</div><div class="tab-label" data-i18n="reports">Reports</div>
+          </div>
+          <div class="tab-item" onclick="goTo('screen-settings')">
+            <div class="tab-dot">⚙️</div><div class="tab-label" data-i18n="settings">Settings</div>
+          </div>
         </div>
       </div>
 
-    </div><!-- /phone-screen -->
-  </div><!-- /phone-frame -->
+      <!-- SETTINGS -->
+      <div class="screen" id="screen-settings">
+        <div class="status-bar dark"><span>9:41</span><span>▪ ▪ ▪ ◼</span></div>
+        <div class="simple-header">
+          <h2 data-i18n="settings">Settings</h2>
+          <p data-i18n="settingsSub">Preferences & caregiver</p>
+        </div>
+
+        <div class="scroll-area">
+
+          <div class="setting-group">
+            <h4 data-i18n="setLanguage">Language & Voice</h4>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label" data-i18n="setAppLang">App language</div>
+                <div class="setting-sub" data-i18n="setAppLangSub">Affects all text and voice reminders</div>
+              </div>
+              <div class="seg-toggle" onclick="toggleLang()">
+                <div id="set-lang-en" class="on">EN</div>
+                <div id="set-lang-ar">AR</div>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label" data-i18n="setVoiceRem">Voice reminders</div>
+                <div class="setting-sub" data-i18n="setVoiceRemSub">Spoken alerts at reminder time</div>
+              </div>
+              <div class="switch on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label" data-i18n="setLargeText">Large text mode</div>
+                <div class="setting-sub" data-i18n="setLargeTextSub">Bigger text across the app</div>
+              </div>
+              <div class="switch" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <h4 data-i18n="setReminders">Reminders</h4>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label" data-i18n="setAdaptive">Adaptive scheduling</div>
+                <div class="setting-sub" data-i18n="setAdaptiveSub">AI shifts reminders to your real routine</div>
+              </div>
+              <div class="switch on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label" data-i18n="setFollowup">Follow-up if missed</div>
+                <div class="setting-sub" data-i18n="setFollowupSub">Re-alert 20 min after a missed dose</div>
+              </div>
+              <div class="switch on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <h4 data-i18n="setCaregiver">Caregiver</h4>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Dr. Hassan Al-Mansoori</div>
+                <div class="setting-sub">+971 50 123 4567</div>
+              </div>
+              <div class="setting-value" data-i18n="setPrimary">Primary</div>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label" data-i18n="setWeekly">Send weekly report</div>
+                <div class="setting-sub" data-i18n="setWeeklySub">Every Sunday at 9:00 AM</div>
+              </div>
+              <div class="switch on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <h4 data-i18n="setPrivacy">Privacy</h4>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label" data-i18n="setLocal">Store data locally only</div>
+                <div class="setting-sub" data-i18n="setLocalSub">No cloud sync. Data stays on this device.</div>
+              </div>
+              <div class="switch on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="tab-bar">
+          <div class="tab-item" onclick="goTo('screen-home')">
+            <div class="tab-dot">🏠</div><div class="tab-label" data-i18n="home">Home</div>
+          </div>
+          <div class="tab-item" onclick="goTo('screen-medicines')">
+            <div class="tab-dot">💊</div><div class="tab-label" data-i18n="medicines">Medicines</div>
+          </div>
+          <div class="tab-item" onclick="goTo('screen-report')">
+            <div class="tab-dot">📊</div><div class="tab-label" data-i18n="reports">Reports</div>
+          </div>
+          <div class="tab-item active-tab" onclick="goTo('screen-settings')">
+            <div class="tab-dot">⚙️</div><div class="tab-label" data-i18n="settings">Settings</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REMINDER -->
+      <div class="screen" id="screen-reminder">
+        <div class="status-bar reminder-bar"><span>9:41</span><span>▪ ▪ ▪ ◼</span></div>
+        <div class="reminder-body">
+          <div class="reminder-pulse">💊</div>
+          <div class="reminder-time" data-i18n="reminderTime">Time for your 2:00 PM medication</div>
+          <div class="reminder-title">Atorvastatin</div>
+          <div class="reminder-dose"><span data-i18n="oneTablet">1 tablet</span> · 20mg</div>
+          <div class="reminder-why" data-i18n="reminderWhy">For your cholesterol</div>
+
+          <button class="audio-btn" onclick="playAudio(this)">
+            <span class="audio-icon">🔊</span>
+            <span id="audio-text" data-i18n="playInOther">Play in Arabic</span>
+          </button>
+
+          <div class="info-expand" id="med-info">
+            <strong data-i18n="aboutMed">About this medication</strong>
+            <span data-i18n="aboutAtorva">Atorvastatin lowers cholesterol in your blood. Take 1 tablet with water. Common side effects: mild muscle aches. Call Dr. Hassan if you feel unwell.</span>
+          </div>
+
+          <div class="reminder-actions">
+            <button class="btn-taken" onclick="confirmTaken()" data-i18n="btnTaken">✓ I took it</button>
+            <div class="btn-row">
+              <button class="btn-secondary" onclick="snoozeReminder()" data-i18n="btnSnooze">⏰ Snooze 30 min</button>
+              <button class="btn-secondary" onclick="toggleInfo()" data-i18n="btnWhatIs">❓ What is this?</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFIRM -->
+      <div class="screen" id="screen-confirm">
+        <div class="status-bar light"><span>9:41</span><span>▪ ▪ ▪ ◼</span></div>
+        <div class="confirm-body">
+          <div class="confirm-check">✓</div>
+          <div class="confirm-title" data-i18n="confirmTitle">Logged!</div>
+          <div class="confirm-sub" data-i18n="confirmSub">Atorvastatin marked as taken at 2:03 PM today</div>
+          <div class="confirm-next">
+            <span data-i18n="nextMed">Next medication:</span><br>
+            <strong data-i18n="metoprolol">Metformin — 8:00 PM tonight</strong>
+          </div>
+          <div class="ai-note">
+            <strong data-i18n="aiUpdate">AI update</strong>
+            <span data-i18n="aiNote">You usually take this at 2:05–2:10 PM. Tomorrow's reminder has been adjusted to 2:05 PM.</span>
+          </div>
+          <button class="btn-home" onclick="goTo('screen-home')" data-i18n="backHome">Back to home</button>
+        </div>
+      </div>
+
+      <div class="toast" id="toast"></div>
+
+    </div>
+  </div>
 
   <!-- SIDE PANEL -->
   <div class="side-panel">
@@ -749,40 +1108,54 @@
     <div class="side-heading">AI-powered medication companion for elderly patients</div>
 
     <ul class="screen-list">
-      <li class="active-nav" id="nav-home" onclick="showScreen('screen-home'); setNav('nav-home')">
+      <li class="active-nav" id="nav-home" onclick="goTo('screen-home')">
         <div class="nav-dot"></div>
-        <div class="nav-content">
+        <div>
           <div class="nav-title">Home Dashboard</div>
-          <div class="nav-desc">Today's schedule, completion ring, at-a-glance status</div>
+          <div class="nav-desc">Today's schedule, completion ring, status at a glance</div>
         </div>
       </li>
-      <li id="nav-reminder" onclick="showScreen('screen-reminder'); setNav('nav-reminder')">
+      <li id="nav-medicines" onclick="goTo('screen-medicines')">
         <div class="nav-dot"></div>
-        <div class="nav-content">
+        <div>
+          <div class="nav-title">Medicines</div>
+          <div class="nav-desc">All prescriptions with dose, timing, and purpose</div>
+        </div>
+      </li>
+      <li id="nav-reminder" onclick="goTo('screen-reminder')">
+        <div class="nav-dot"></div>
+        <div>
           <div class="nav-title">Active Reminder</div>
-          <div class="nav-desc">Full-screen alert with audio, language toggle, action buttons</div>
+          <div class="nav-desc">Full-screen alert with audio, language toggle, snooze, info</div>
         </div>
       </li>
-      <li id="nav-confirm" onclick="showScreen('screen-confirm'); setNav('nav-confirm')">
+      <li id="nav-confirm" onclick="goTo('screen-confirm')">
         <div class="nav-dot"></div>
-        <div class="nav-content">
+        <div>
           <div class="nav-title">Confirmation + AI Insight</div>
-          <div class="nav-desc">Dose logged, next reminder shown, adaptive scheduling note</div>
+          <div class="nav-desc">Dose logged, next reminder, adaptive scheduling note</div>
         </div>
       </li>
-      <li id="nav-report" onclick="showScreen('screen-report'); setNav('nav-report')">
+      <li id="nav-report" onclick="goTo('screen-report')">
         <div class="nav-dot"></div>
-        <div class="nav-content">
+        <div>
           <div class="nav-title">Weekly Report</div>
           <div class="nav-desc">Adherence donut, day-by-day calendar, per-medication breakdown</div>
+        </div>
+      </li>
+      <li id="nav-settings" onclick="goTo('screen-settings')">
+        <div class="nav-dot"></div>
+        <div>
+          <div class="nav-title">Settings</div>
+          <div class="nav-desc">Language, voice, adaptive AI toggle, caregiver, privacy</div>
         </div>
       </li>
     </ul>
 
     <div class="side-feature">
-      <div class="feature-label">AI components active in this demo</div>
+      <div class="feature-label">Try the Arabic toggle</div>
       <div class="feature-text">
-        NLP reminder engine · Adaptive scheduling (see confirmation screen) · Automated weekly report generation · Bilingual AR/EN voice interface
+        Tap "AR" in the top corner of the home screen, or open Settings → App language. The interface translates and switches to a right-to-left layout.
       </div>
     </div>
   </div>
@@ -790,54 +1163,250 @@
 </div>
 
 <script>
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => {
-    s.classList.remove('active');
-    s.style.opacity = 0;
+const i18n = {
+  en: {
+    greeting: "Good morning,",
+    todayMeds: "Today's medications",
+    scheduled: "scheduled",
+    todaySummary: "2 taken · 1 upcoming · 1 missed",
+    todaysSchedule: "Today's Schedule",
+    thisWeek: "This Week",
+    weeklyReport: "Weekly Report",
+    tapToView: "Tap to view adherence summary",
+    home: "Home", medicines: "Medicines", reports: "Reports", settings: "Settings",
+    statusTaken: "Taken ✓", statusMissed: "Missed",
+    withWater: "With water", withFood: "With food", anyTime: "Any time",
+    comingUp: "Coming up",
+    medicinesSub: "4 active prescriptions",
+    oncePerDay: "Once per day", twicePerDay: "Twice per day",
+    metaTime: "Time", metaWith: "Take with",
+    purposeLabel: "What it's for",
+    lisinoprilPurpose: "Blood pressure control. Helps relax blood vessels.",
+    metforminPurpose: "Manages blood sugar in type 2 diabetes.",
+    atorvaPurpose: "Lowers cholesterol. Reduces risk of heart disease.",
+    aspirinPurpose: "Low-dose. Prevents blood clots and protects the heart.",
+    autoSent: "Auto-sent to Dr. Hassan",
+    goodThisWeek: "Good this week",
+    dosesTaken: "22 of 28 doses taken on time",
+    upFromLast: "↑ Up from 71% last week",
+    dayByDay: "Day by day",
+    byMedication: "By medication",
+    mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun",
+    shareBtn: "📤 Share with Dr. Hassan",
+    settingsSub: "Preferences & caregiver",
+    setLanguage: "Language & Voice",
+    setAppLang: "App language",
+    setAppLangSub: "Affects all text and voice reminders",
+    setVoiceRem: "Voice reminders",
+    setVoiceRemSub: "Spoken alerts at reminder time",
+    setLargeText: "Large text mode",
+    setLargeTextSub: "Bigger text across the app",
+    setReminders: "Reminders",
+    setAdaptive: "Adaptive scheduling",
+    setAdaptiveSub: "AI shifts reminders to your real routine",
+    setFollowup: "Follow-up if missed",
+    setFollowupSub: "Re-alert 20 min after a missed dose",
+    setCaregiver: "Caregiver",
+    setPrimary: "Primary",
+    setWeekly: "Send weekly report",
+    setWeeklySub: "Every Sunday at 9:00 AM",
+    setPrivacy: "Privacy",
+    setLocal: "Store data locally only",
+    setLocalSub: "No cloud sync. Data stays on this device.",
+    reminderTime: "Time for your 2:00 PM medication",
+    oneTablet: "1 tablet",
+    reminderWhy: "For your cholesterol",
+    playInOther: "Play in Arabic",
+    btnTaken: "✓ I took it",
+    btnSnooze: "⏰ Snooze 30 min",
+    btnWhatIs: "❓ What is this?",
+    aboutMed: "About this medication",
+    aboutAtorva: "Atorvastatin lowers cholesterol in your blood. Take 1 tablet with water. Common side effects: mild muscle aches. Call Dr. Hassan if you feel unwell.",
+    confirmTitle: "Logged!",
+    confirmSub: "Atorvastatin marked as taken at 2:03 PM today",
+    nextMed: "Next medication:",
+    metoprolol: "Metformin — 8:00 PM tonight",
+    aiUpdate: "AI update",
+    aiNote: "You usually take this at 2:05–2:10 PM. Tomorrow's reminder has been adjusted to 2:05 PM.",
+    backHome: "Back to home",
+    toastSnooze: "Snoozed for 30 minutes",
+    toastSent: "Sent to Dr. Hassan ✓",
+    snoozedLabel: "Snoozed"
+  },
+  ar: {
+    greeting: "صباح الخير،",
+    todayMeds: "أدوية اليوم",
+    scheduled: "مجدولة",
+    todaySummary: "تم أخذ ٢ · ١ قادم · ١ فائت",
+    todaysSchedule: "جدول اليوم",
+    thisWeek: "هذا الأسبوع",
+    weeklyReport: "التقرير الأسبوعي",
+    tapToView: "اضغط لعرض ملخص الالتزام",
+    home: "الرئيسية", medicines: "الأدوية", reports: "التقارير", settings: "الإعدادات",
+    statusTaken: "✓ تم", statusMissed: "فائت",
+    withWater: "مع الماء", withFood: "مع الطعام", anyTime: "أي وقت",
+    comingUp: "قادم",
+    medicinesSub: "٤ وصفات نشطة",
+    oncePerDay: "مرة في اليوم", twicePerDay: "مرتين في اليوم",
+    metaTime: "الوقت", metaWith: "يؤخذ مع",
+    purposeLabel: "الغرض",
+    lisinoprilPurpose: "للتحكم في ضغط الدم. يساعد على ارتخاء الأوعية الدموية.",
+    metforminPurpose: "يضبط مستوى السكر في الدم لمرضى السكري النوع الثاني.",
+    atorvaPurpose: "يخفض الكوليسترول. يقلل خطر أمراض القلب.",
+    aspirinPurpose: "جرعة منخفضة. يمنع التجلطات ويحمي القلب.",
+    autoSent: "أُرسل تلقائياً للدكتور حسن",
+    goodThisWeek: "أداء جيد هذا الأسبوع",
+    dosesTaken: "تم أخذ ٢٢ من أصل ٢٨ جرعة في وقتها",
+    upFromLast: "↑ ارتفاع من ٧١٪ الأسبوع الماضي",
+    dayByDay: "يوماً بيوم",
+    byMedication: "حسب الدواء",
+    mon: "إثن", tue: "ثلا", wed: "أرب", thu: "خمي", fri: "جمع", sat: "سبت", sun: "أحد",
+    shareBtn: "📤 إرسال للدكتور حسن",
+    settingsSub: "التفضيلات ومقدم الرعاية",
+    setLanguage: "اللغة والصوت",
+    setAppLang: "لغة التطبيق",
+    setAppLangSub: "تؤثر على جميع النصوص والتنبيهات الصوتية",
+    setVoiceRem: "التنبيهات الصوتية",
+    setVoiceRemSub: "تنبيهات منطوقة عند وقت التذكير",
+    setLargeText: "وضع النص الكبير",
+    setLargeTextSub: "نص أكبر في جميع أنحاء التطبيق",
+    setReminders: "التذكيرات",
+    setAdaptive: "الجدولة الذكية",
+    setAdaptiveSub: "يضبط الذكاء الاصطناعي مواعيد التذكير حسب روتينك",
+    setFollowup: "متابعة الجرعات الفائتة",
+    setFollowupSub: "تنبيه مجدد بعد ٢٠ دقيقة من الجرعة الفائتة",
+    setCaregiver: "مقدم الرعاية",
+    setPrimary: "أساسي",
+    setWeekly: "إرسال التقرير الأسبوعي",
+    setWeeklySub: "كل يوم أحد الساعة ٩:٠٠ صباحاً",
+    setPrivacy: "الخصوصية",
+    setLocal: "حفظ البيانات محلياً فقط",
+    setLocalSub: "لا توجد مزامنة سحابية. تبقى البيانات على هذا الجهاز.",
+    reminderTime: "حان وقت دواء الساعة ٢:٠٠ مساءً",
+    oneTablet: "قرص واحد",
+    reminderWhy: "لمستوى الكوليسترول",
+    playInOther: "تشغيل بالإنجليزية",
+    btnTaken: "✓ لقد أخذته",
+    btnSnooze: "⏰ تأجيل ٣٠ دقيقة",
+    btnWhatIs: "❓ ما هذا الدواء؟",
+    aboutMed: "عن هذا الدواء",
+    aboutAtorva: "أتورفاستاتين يخفض الكوليسترول في الدم. تناول قرصاً واحداً مع الماء. آثار جانبية شائعة: آلام عضلية خفيفة. اتصل بالدكتور حسن إذا شعرت بتوعك.",
+    confirmTitle: "تم التسجيل!",
+    confirmSub: "تم تسجيل أتورفاستاتين كمأخوذ عند ٢:٠٣ مساءً اليوم",
+    nextMed: "الدواء التالي:",
+    metoprolol: "ميتفورمين — ٨:٠٠ مساءً الليلة",
+    aiUpdate: "تحديث من الذكاء الاصطناعي",
+    aiNote: "تأخذ هذا الدواء عادةً بين ٢:٠٥ و ٢:١٠ مساءً. تم ضبط تذكير الغد على ٢:٠٥ مساءً.",
+    backHome: "العودة للرئيسية",
+    toastSnooze: "تم التأجيل ٣٠ دقيقة",
+    toastSent: "✓ تم الإرسال للدكتور حسن",
+    snoozedLabel: "مؤجل"
+  }
+};
+
+let currentLang = 'en';
+
+function applyLang() {
+  const dict = i18n[currentLang];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (dict[key] !== undefined) el.textContent = dict[key];
   });
-  const t = document.getElementById(id);
-  t.classList.add('active');
-  setTimeout(() => t.style.opacity = 1, 10);
 
-  const map = { 'screen-home': 'nav-home', 'screen-reminder': 'nav-reminder', 'screen-confirm': 'nav-confirm', 'screen-report': 'nav-report' };
-  if (map[id]) setNav(map[id]);
+  const phoneScreen = document.getElementById('phone-screen');
+  if (currentLang === 'ar') {
+    phoneScreen.classList.add('rtl');
+    document.body.classList.add('lang-ar');
+  } else {
+    phoneScreen.classList.remove('rtl');
+    document.body.classList.remove('lang-ar');
+  }
+
+  document.getElementById('lang-en').classList.toggle('active', currentLang === 'en');
+  document.getElementById('lang-ar').classList.toggle('active', currentLang === 'ar');
+  document.getElementById('set-lang-en').classList.toggle('on', currentLang === 'en');
+  document.getElementById('set-lang-ar').classList.toggle('on', currentLang === 'ar');
 }
 
-function setNav(active) {
+function toggleLang() {
+  currentLang = (currentLang === 'en') ? 'ar' : 'en';
+  applyLang();
+}
+
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(screenId);
+  if (target) target.classList.add('active');
+
+  const sideMap = {
+    'screen-home': 'nav-home',
+    'screen-medicines': 'nav-medicines',
+    'screen-reminder': 'nav-reminder',
+    'screen-confirm': 'nav-confirm',
+    'screen-report': 'nav-report',
+    'screen-settings': 'nav-settings'
+  };
   document.querySelectorAll('.screen-list li').forEach(li => li.classList.remove('active-nav'));
-  const el = document.getElementById(active);
-  if (el) el.classList.add('active-nav');
+  const sideEl = document.getElementById(sideMap[screenId]);
+  if (sideEl) sideEl.classList.add('active-nav');
 }
 
-function toggleLang(el) {
-  const en = document.getElementById('lang-en');
-  const ar = document.getElementById('lang-ar');
-  en.classList.toggle('active');
-  ar.classList.toggle('active');
+function openReminder() { goTo('screen-reminder'); }
+function openMedicines() { goTo('screen-medicines'); }
 
-  const isAR = ar.classList.contains('active');
-  document.getElementById('audio-text').textContent = isAR ? 'Play in English' : 'Play in Arabic';
+function confirmTaken() {
+  const status = document.getElementById('atorva-status');
+  const card = status.closest('.med-card');
+  status.className = 'med-status status-taken';
+  status.textContent = i18n[currentLang].statusTaken;
+  card.classList.remove('upcoming-highlight');
+  card.querySelector('.med-icon').className = 'med-icon green';
+  goTo('screen-confirm');
+}
+
+function snoozeReminder() {
+  const status = document.getElementById('atorva-status');
+  status.className = 'med-status status-snoozed';
+  status.textContent = i18n[currentLang].snoozedLabel;
+  goTo('screen-home');
+  showToast(i18n[currentLang].toastSnooze);
+}
+
+function toggleInfo() {
+  document.getElementById('med-info').classList.toggle('visible');
 }
 
 function playAudio(btn) {
+  const txt = document.getElementById('audio-text');
   btn.style.background = 'rgba(255,255,255,0.25)';
-  btn.innerHTML = '<span class="audio-icon">🔊</span><span>Playing...</span>';
+  const originalKey = 'playInOther';
+  txt.textContent = currentLang === 'en' ? 'Playing…' : 'جارٍ التشغيل…';
   setTimeout(() => {
     btn.style.background = '';
-    const isAR = document.getElementById('lang-ar').classList.contains('active');
-    btn.innerHTML = `<span class="audio-icon">🔊</span><span>${isAR ? 'Play in English' : 'Play in Arabic'}</span>`;
+    txt.textContent = i18n[currentLang][originalKey];
   }, 1800);
 }
 
-function shareReport() {
-  const btn = document.querySelector('.share-btn');
-  btn.textContent = '✓ Sent to Dr. Hassan';
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('visible'), 2200);
+}
+
+function shareReport(btn) {
+  btn.textContent = i18n[currentLang].toastSent;
   btn.style.background = '#085041';
+  showToast(i18n[currentLang].toastSent);
   setTimeout(() => {
-    btn.textContent = '📤 Share report with Dr. Hassan';
+    btn.textContent = i18n[currentLang].shareBtn;
     btn.style.background = '';
   }, 2500);
 }
+
+applyLang();
 </script>
 </body>
 </html>
